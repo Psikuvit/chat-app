@@ -95,7 +95,7 @@ io.on('connection', async (socket) => {
   }
 });
 
-const PORT = 3000;
+const PORT = 3001;  // Changed from 3000 to 3001
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

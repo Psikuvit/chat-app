@@ -8,7 +8,7 @@ class SocketService {
       return this.socket;
     }
 
-    this.socket = io('http://localhost:3000', {
+    this.socket = io('http://localhost:3001', {
       query: { username },
       reconnection: true,
       reconnectionAttempts: 5,
