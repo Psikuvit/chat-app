@@ -7,7 +7,7 @@
     }
   ],
   "env": {
-    "NEXT_PUBLIC_SOCKET_SERVER_URL": "@socket_server_url"
+    "NEXT_PUBLIC_SOCKET_SERVER_URL": "https://chatapp-a8f.up.railway.app/"
   },
   "images": {
     "sizes": [256, 512, 1024],
