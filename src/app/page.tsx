@@ -1,7 +1,7 @@
 'use client'
 
 import { Search, Send, Plus, Phone, Trash2 } from "lucide-react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Socket } from "socket.io-client"
 import LoginScreen from "@/components/LoginScreen"
 import { socketService } from "@/services/socket"
@@ -18,6 +18,7 @@ export default function ChatInterface() {
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -131,18 +132,32 @@ export default function ChatInterface() {
     }
   }
 
-  const handleTyping = () => {
+  const handleTyping = useCallback(() => {
     if (socket && currentUser) {
       socket.emit('typing', { isTyping: true })
 
-      // Clear typing indicator after 2 seconds of no typing
-      const timeoutId = setTimeout(() => {
-        socket && socket.emit('typing', { isTyping: false })
-      }, 2000)
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
 
-      return () => clearTimeout(timeoutId)
+      // Set new timeout
+      typingTimeoutRef.current = setTimeout(() => {
+        if (socket) {
+          socket.emit('typing', { isTyping: false })
+        }
+      }, 2000)
     }
-  }
+  }, [socket, currentUser]);
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (currentUser && socket) {
