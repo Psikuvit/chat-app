@@ -9,8 +9,19 @@ const nextConfig = {
         port: '3000',
         pathname: '/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: '**.vercel.app',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.railway.app',
+        pathname: '/uploads/**',
+      }
     ],
   },
+  output: 'standalone',
 }
 
 module.exports = nextConfig

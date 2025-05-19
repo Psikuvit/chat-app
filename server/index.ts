@@ -28,7 +28,9 @@ const storage = multer.diskStorage({
     cb(null, join(__dirname, 'uploads'));
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    // Sanitize filename and add timestamp
+    const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, `${Date.now()}-${sanitizedName}`);
   }
 });
 
@@ -55,10 +57,13 @@ app.post('/upload', upload.single('image'), (req, res) => {
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: config.corsOrigin,
+    origin: process.env.NODE_ENV === 'production' 
+      ? [/\.vercel\.app$/, config.corsOrigin]
+      : config.corsOrigin,
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  maxHttpBufferSize: 1e7 // 10 MB max file size
 });
 
 const users = new Set<string>();
