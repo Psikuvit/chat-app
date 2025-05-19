@@ -6,6 +6,7 @@ import { Socket } from "socket.io-client"
 import LoginScreen from "@/components/LoginScreen"
 import { socketService } from "@/services/socket"
 import { Message } from "@/types/chat"
+import Image from 'next/image';
 
 export default function ChatInterface() {
   const [currentUser, setCurrentUser] = useState<string | null>(null)
@@ -13,7 +14,6 @@ export default function ChatInterface() {
   const [socket, setSocket] = useState<Socket | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
@@ -52,43 +52,6 @@ export default function ChatInterface() {
     }
   }
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      try {
-        const response = await fetch('http://localhost:3001/upload', {
-          method: 'POST',
-          body: formData,
-          // Add these headers
-          credentials: 'include',
-          mode: 'cors',
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        if (socket) {
-          socket.emit('message', {
-            content: file.name,
-            sender: currentUser,
-            fileUrl: data.fileUrl,
-            timestamp: Date.now()
-          });
-        }
-      } catch (error) {
-        console.error('Error uploading file:', error);
-        // Add user feedback
-        alert('Failed to upload file. Please try again.');
-      }
-    }
-  };
-
   const renderMessage = (message: Message) => (
     <div
       key={message.id}
@@ -101,9 +64,11 @@ export default function ChatInterface() {
       }`}>
         <p className="text-sm font-medium mb-1">{message.sender}</p>
         {message.fileUrl ? (
-          <img 
+          <Image 
             src={`http://localhost:3001${message.fileUrl}`} 
-            alt="Shared image" 
+            alt="Shared image"
+            width={400}
+            height={300} 
             className="max-w-full rounded"
           />
         ) : (
@@ -183,7 +148,7 @@ export default function ChatInterface() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={handleFileSelect}
+                // onChange={handleFileSelect} // Removed file input as it's not being used
               />
               <Plus className="h-5 w-5 text-white" />
             </label>
