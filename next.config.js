@@ -1,26 +1,10 @@
 const nextConfig = {
   images: {
-    domains: ['localhost'],
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3000',
-        pathname: '/uploads/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.vercel.app',
-        pathname: '/uploads/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.railway.app',
-        pathname: '/uploads/**',
-      }
-    ],
+    domains: ['localhost', 'your-railway-app-url.com'],
   },
-  output: 'standalone',
+  env: {
+    NEXT_PUBLIC_SOCKET_SERVER_URL: process.env.NEXT_PUBLIC_SOCKET_SERVER_URL,
+  }
 }
 
 module.exports = nextConfig
