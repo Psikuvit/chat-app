@@ -65,7 +65,7 @@ export default function ChatInterface() {
         <p className="text-sm font-medium mb-1">{message.sender}</p>
         {message.fileUrl ? (
           <Image 
-            src={`http://localhost:3001${message.fileUrl}`} 
+            src={`http://localhost:3000${message.fileUrl}`} 
             alt="Shared image"
             width={400}
             height={300} 

@@ -6,7 +6,14 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Chat App',
-  description: 'Chat application with custom layout',
+  description: 'Real-time chat application',
+  icons: {
+    icon: '/favicon.ico',
+    // You can also specify different sizes
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180' },
+    ],
+  },
 }
 
 export default function RootLayout({
@@ -16,6 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head />
       <body className={inter.className}>{children}</body>
     </html>
   )
