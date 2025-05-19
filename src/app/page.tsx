@@ -6,7 +6,7 @@ import { Socket } from "socket.io-client"
 import LoginScreen from "@/components/LoginScreen"
 import { socketService } from "@/services/socket"
 import { Message } from "@/types/chat"
-import Image from 'next/image';
+import Image from 'next/image'
 
 export default function ChatInterface() {
   const [currentUser, setCurrentUser] = useState<string | null>(null)
@@ -131,50 +131,48 @@ export default function ChatInterface() {
       alert('Failed to upload image')
     }
   }
+
+  const setTypingStatus = useCallback((isTyping: boolean) => {
+    if (socket && currentUser) {
+      socket.emit('typing', { isTyping });
+    }
+  }, [socket, currentUser]);
+
   const handleTyping = useCallback(() => {
-    if (!socket || !currentUser) return;
-
-    socket.emit('typing', { isTyping: true });
-
-    // Clear previous timeout
+    setTypingStatus(true);
+    
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
-
+    
     typingTimeoutRef.current = setTimeout(() => {
-      socket.emit('typing', { isTyping: false });
+      setTypingStatus(false);
     }, 2000);
-  }, [socket, currentUser]);
-
-  // Cleanup typing timeout on unmount
-  useEffect(() => {
-    const timeoutRef = typingTimeoutRef.current;
-    return () => {
-      if (timeoutRef) {
-        clearTimeout(timeoutRef);
-      }
-    };
-  }, []);
+  }, [setTypingStatus]);
 
   useEffect(() => {
     if (currentUser && socket) {
       socket.on('user-typing', ({ username, isTyping }) => {
         setTypingUsers(prev => {
-          const newSet = new Set(prev)
+          const newSet = new Set(prev);
           if (isTyping) {
-            newSet.add(username)
+            newSet.add(username);
           } else {
-            newSet.delete(username)
+            newSet.delete(username);
           }
-          return newSet
-        })
-      })
+          return newSet;
+        });
+      });
 
       return () => {
-        socket.off('user-typing')
-      }
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+        setTypingStatus(false);
+        socket.off('user-typing');
+      };
     }
-  }, [currentUser, socket])
+  }, [currentUser, socket, setTypingStatus]);
 
   if (!currentUser) {
     return <LoginScreen onLogin={setCurrentUser} />
