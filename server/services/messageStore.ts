@@ -1,21 +1,21 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import fs from 'fs/promises'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export interface StoredMessage {
-  id: string;
-  content: string;
-  sender: string;
-  timestamp: number;
-  fileUrl?: string;
+  id: string
+  content: string
+  sender: string
+  timestamp: number
+  fileUrl?: string
 }
 
 class MessageStore {
-  private messagesPath = path.join(__dirname, '..', 'data', 'messages.json');
+  private messagesPath = path.join(__dirname, '..', 'data', 'messages.json')
 
   constructor() {
     this.initializeStorage();

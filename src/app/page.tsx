@@ -1,5 +1,4 @@
 'use client'
-
 import { Search, Send, Plus, Phone, Trash2 } from "lucide-react"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Socket } from "socket.io-client"
@@ -37,7 +36,6 @@ export default function ChatInterface() {
         setOnlineUsers(users)
       })
 
-      // Add handler for loading old messages
       newSocket.on('load-messages', (messages: Message[]) => {
         setMessages(messages)
       })
@@ -77,7 +75,7 @@ export default function ChatInterface() {
         <p className="text-sm font-medium mb-1">{message.sender}</p>
         {message.fileUrl ? (
           <Image 
-            src={`http://localhost:3000${message.fileUrl}`} 
+            src={`${process.env.NEXT_PUBLIC_SOCKET_SERVER_URL}${message.fileUrl}`} 
             alt="Shared image"
             width={400}
             height={300} 
@@ -88,9 +86,8 @@ export default function ChatInterface() {
         )}
       </div>
     </div>
-  );
+  )
 
-  // Filter online users based on search query
   const filteredUsers = onlineUsers.filter(user => 
     user.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -134,45 +131,45 @@ export default function ChatInterface() {
 
   const setTypingStatus = useCallback((isTyping: boolean) => {
     if (socket && currentUser) {
-      socket.emit('typing', { isTyping });
+      socket.emit('typing', { isTyping })
     }
-  }, [socket, currentUser]); 
+  }, [socket, currentUser])
 
   const handleTyping = useCallback(() => {
-    setTypingStatus(true);
+    setTypingStatus(true)
     
     if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
+      clearTimeout(typingTimeoutRef.current)
     }
     
     typingTimeoutRef.current = setTimeout(() => {
-      setTypingStatus(false);
-    }, 2000);
-  }, [setTypingStatus]);
+      setTypingStatus(false)
+    }, 2000)
+  }, [setTypingStatus])
 
   useEffect(() => {
     if (currentUser && socket) {
       socket.on('user-typing', ({ username, isTyping }) => {
         setTypingUsers(prev => {
-          const newSet = new Set(prev);
+          const newSet = new Set(prev)
           if (isTyping) {
-            newSet.add(username);
+            newSet.add(username)
           } else {
-            newSet.delete(username);
+            newSet.delete(username)
           }
-          return newSet;
-        });
-      });
+          return newSet
+        })
+      })
 
       return () => {
         if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
+          clearTimeout(typingTimeoutRef.current)
         }
-        setTypingStatus(false);
-        socket.off('user-typing');
-      };
+        setTypingStatus(false)
+        socket.off('user-typing')
+      }
     }
-  }, [currentUser, socket, setTypingStatus]);
+  }, [currentUser, socket, setTypingStatus])
 
   if (!currentUser) {
     return <LoginScreen onLogin={setCurrentUser} />
@@ -180,9 +177,7 @@ export default function ChatInterface() {
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover">
-      {/* Left sidebar with contacts */}
       <div className="w-80 bg-gray-800/90 backdrop-blur-sm flex flex-col border-r border-gray-700">
-        {/* Search bar */}
         <div className="p-4 border-b border-gray-700">
           <div className="relative flex items-center gap-2">
             <div className="relative flex-1">
@@ -207,7 +202,6 @@ export default function ChatInterface() {
           </div>
         </div>
 
-        {/* Online users list */}
         <div className="flex-1 overflow-auto">
           <ul className="divide-y divide-gray-700">
             {filteredUsers.map((user, index) => (
@@ -232,7 +226,6 @@ export default function ChatInterface() {
         </div>
       </div>
 
-      {/* Main chat area */}
       <div className="flex-1 flex flex-col">
         <div className="flex-1 p-6 overflow-auto">
           <div className="space-y-4">
@@ -246,7 +239,6 @@ export default function ChatInterface() {
           </div>
         </div>
 
-        {/* Message input */}
         <div className="p-4 bg-gray-800/90 backdrop-blur-sm border-t border-gray-700">
           <form onSubmit={sendMessage} className="flex items-center gap-2">
             <label className="p-2 rounded-full hover:bg-gray-700 cursor-pointer">
