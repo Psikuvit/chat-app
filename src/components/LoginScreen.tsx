@@ -17,7 +17,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   return (
     <div className="flex h-screen items-center justify-center bg-[url('/background.jpg')] bg-cover">
       <form onSubmit={handleSubmit} className="w-80 p-6 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-6">Welcome to Chat App</h2>
+        <h2 className="text-2xl text-black font-bold text-center mb-6">Welcome to Chat App</h2>
         <input
           type="text"
           value={username}

@@ -1,7 +1,7 @@
 'use client'
 
-import { Search, Send, Plus, Phone } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Search, Send, Plus, Phone, Trash2 } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { Socket } from "socket.io-client"
 import LoginScreen from "@/components/LoginScreen"
 import { socketService } from "@/services/socket"
@@ -15,6 +15,15 @@ export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   useEffect(() => {
     if (currentUser) {
@@ -83,6 +92,13 @@ export default function ChatInterface() {
     user.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  const resetLogs = () => {
+    if (socket) {
+      socket.emit('reset-logs')
+      setMessages([])
+    }
+  }
+
   if (!currentUser) {
     return <LoginScreen onLogin={setCurrentUser} />
   }
@@ -93,17 +109,26 @@ export default function ChatInterface() {
       <div className="w-80 bg-gray-800/90 backdrop-blur-sm flex flex-col border-r border-gray-700">
         {/* Search bar */}
         <div className="p-4 border-b border-gray-700">
-          <div className="relative">
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-              <Search className="h-4 w-4 text-white" />
+          <div className="relative flex items-center gap-2">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                <Search className="h-4 w-4 text-white" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search a user?"
+                className="w-full rounded-full bg-gray-700 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-600"
+              />
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search a user?"
-              className="w-full rounded-full bg-gray-700 px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-600"
-            />
+            <button
+              onClick={resetLogs}
+              className="p-2 rounded-full hover:bg-gray-700 text-red-400 hover:text-red-500 transition-colors"
+              title="Reset chat logs"
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
           </div>
         </div>
 
@@ -137,6 +162,7 @@ export default function ChatInterface() {
         <div className="flex-1 p-6 overflow-auto">
           <div className="space-y-4">
             {messages.map((message) => renderMessage(message))}
+            <div ref={messagesEndRef} /> {/* Add this line */}
           </div>
         </div>
 

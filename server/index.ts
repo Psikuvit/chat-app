@@ -77,6 +77,12 @@ io.on('connection', async (socket) => {
     
     io.emit('users', Array.from(users));
 
+    socket.on('reset-logs', async () => {
+      await messageStore.resetMessages();
+      io.emit('load-messages', []);
+      console.log(`Chat logs reset by ${username}`);
+    });
+
     socket.on('message', async (messageData) => {
       const message = {
         ...messageData,

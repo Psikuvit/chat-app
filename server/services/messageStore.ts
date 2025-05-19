@@ -53,6 +53,14 @@ class MessageStore {
       console.error('Error saving message:', error);
     }
   }
+
+  async resetMessages(): Promise<void> {
+    try {
+      await fs.writeFile(this.messagesPath, JSON.stringify([]));
+    } catch (error) {
+      console.error('Error resetting messages:', error);
+    }
+  }
 }
 
 export const messageStore = new MessageStore();
