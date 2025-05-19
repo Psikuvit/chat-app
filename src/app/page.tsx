@@ -131,33 +131,30 @@ export default function ChatInterface() {
       alert('Failed to upload image')
     }
   }
-
   const handleTyping = useCallback(() => {
-    if (socket && currentUser) {
-      socket.emit('typing', { isTyping: true })
+    if (!socket || !currentUser) return;
 
-      // Clear previous timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
-      }
+    socket.emit('typing', { isTyping: true });
 
-      // Set new timeout
-      typingTimeoutRef.current = setTimeout(() => {
-        if (socket) {
-          socket.emit('typing', { isTyping: false })
-        }
-      }, 2000)
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
     }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit('typing', { isTyping: false });
+    }, 2000);
   }, [socket, currentUser]);
 
   // Cleanup typing timeout on unmount
   useEffect(() => {
+    const timeoutRef = typingTimeoutRef.current;
     return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
+      if (timeoutRef) {
+        clearTimeout(timeoutRef);
       }
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
     if (currentUser && socket) {
