@@ -77,10 +77,8 @@ io.on('connection', async (socket) => {
     
     io.emit('users', Array.from(users));
 
-    socket.on('reset-logs', async () => {
-      await messageStore.resetMessages();
-      io.emit('load-messages', []);
-      console.log(`Chat logs reset by ${username}`);
+    socket.on('typing', ({ isTyping }) => {
+      socket.broadcast.emit('user-typing', { username, isTyping });
     });
 
     socket.on('message', async (messageData) => {
@@ -92,6 +90,12 @@ io.on('connection', async (socket) => {
       await messageStore.saveMessage(message);
       io.emit('message', message);
       console.log(`Message from ${username}:`, message.content);
+    });
+
+    socket.on('reset-logs', async () => {
+      await messageStore.resetMessages();
+      io.emit('load-messages', []);
+      console.log(`Chat logs reset by ${username}`);
     });
 
     socket.on('disconnect', () => {

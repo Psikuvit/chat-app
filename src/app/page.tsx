@@ -15,7 +15,9 @@ export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -99,6 +101,69 @@ export default function ChatInterface() {
     }
   }
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !socket) return
+
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SOCKET_SERVER_URL}/upload`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) throw new Error('Upload failed')
+
+      const { fileUrl } = await response.json()
+      
+      socket.emit('message', {
+        content: file.name,
+        sender: currentUser,
+        timestamp: Date.now(),
+        fileUrl,
+        type: 'image'
+      })
+    } catch (error) {
+      console.error('Error uploading file:', error)
+      alert('Failed to upload image')
+    }
+  }
+
+  const handleTyping = () => {
+    if (socket && currentUser) {
+      socket.emit('typing', { isTyping: true })
+
+      // Clear typing indicator after 2 seconds of no typing
+      const timeoutId = setTimeout(() => {
+        socket && socket.emit('typing', { isTyping: false })
+      }, 2000)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }
+
+  useEffect(() => {
+    if (currentUser && socket) {
+      socket.on('user-typing', ({ username, isTyping }) => {
+        setTypingUsers(prev => {
+          const newSet = new Set(prev)
+          if (isTyping) {
+            newSet.add(username)
+          } else {
+            newSet.delete(username)
+          }
+          return newSet
+        })
+      })
+
+      return () => {
+        socket.off('user-typing')
+      }
+    }
+  }, [currentUser, socket])
+
   if (!currentUser) {
     return <LoginScreen onLogin={setCurrentUser} />
   }
@@ -162,7 +227,12 @@ export default function ChatInterface() {
         <div className="flex-1 p-6 overflow-auto">
           <div className="space-y-4">
             {messages.map((message) => renderMessage(message))}
-            <div ref={messagesEndRef} /> {/* Add this line */}
+            {typingUsers.size > 0 && (
+              <div className="text-sm text-gray-400 italic">
+                {Array.from(typingUsers).join(', ')} {typingUsers.size === 1 ? 'is' : 'are'} typing...
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
         </div>
 
@@ -171,10 +241,11 @@ export default function ChatInterface() {
           <form onSubmit={sendMessage} className="flex items-center gap-2">
             <label className="p-2 rounded-full hover:bg-gray-700 cursor-pointer">
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
-                // onChange={handleFileSelect} // Removed file input as it's not being used
+                onChange={handleFileSelect}
               />
               <Plus className="h-5 w-5 text-white" />
             </label>
@@ -183,6 +254,7 @@ export default function ChatInterface() {
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={handleTyping}
                 placeholder="Type a message"
                 className="w-full bg-transparent focus:outline-none text-white placeholder-gray-400"
               />
