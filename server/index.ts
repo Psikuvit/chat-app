@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { mkdir } from 'fs/promises';
 import { messageStore } from './services/messageStore.js';
+import { config } from './config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,7 +17,7 @@ const app = express();
 
 // Enable CORS
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: config.corsOrigin,
   methods: ["GET", "POST"],
   credentials: true
 }));
@@ -54,7 +55,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: config.corsOrigin,
     methods: ["GET", "POST"],
     credentials: true
   }
