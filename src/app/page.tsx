@@ -136,7 +136,7 @@ export default function ChatInterface() {
     if (socket && currentUser) {
       socket.emit('typing', { isTyping });
     }
-  }, [socket, currentUser]);
+  }, [socket, currentUser]); 
 
   const handleTyping = useCallback(() => {
     setTypingStatus(true);
