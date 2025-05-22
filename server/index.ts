@@ -22,16 +22,35 @@ app.use(cors({
 }))
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, join(__dirname, 'uploads'))
+  destination: async (req, file, cb) => {
+    const uploadDir = join(__dirname, 'uploads')
+    try {
+      await mkdir(uploadDir, { recursive: true })
+      cb(null, uploadDir)
+    } catch (err) {
+      cb(err as Error, '')
+    }
   },
   filename: (req, file, cb) => {
-    const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')
-    cb(null, `${Date.now()}-${sanitizedName}`)
+    const ext = file.originalname.split('.').pop()
+    const uniqueName = `${Date.now()}-${uuidv4()}.${ext}`
+    cb(null, uniqueName)
   }
 })
 
-const upload = multer({ storage })
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 
+  },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      cb(new Error('Only images are allowed'))
+      return
+    }
+    cb(null, true)
+  }
+})
 
 try {
   await mkdir(join(__dirname, 'uploads'), { recursive: true })
@@ -45,7 +64,10 @@ app.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' })
   }
-  res.json({ fileUrl: `/uploads/${req.file.filename}` })
+  
+  const fileUrl = `/uploads/${req.file.filename}`
+  console.log('File uploaded:', fileUrl)
+  res.json({ fileUrl })
 })
 
 const httpServer = createServer(app)

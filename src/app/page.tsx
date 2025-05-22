@@ -103,6 +103,16 @@ export default function ChatInterface() {
     const file = e.target.files?.[0]
     if (!file || !socket) return
 
+    if (!file.type.startsWith('image/')) {
+      alert('Only image files are allowed')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB')
+      return
+    }
+
     const formData = new FormData()
     formData.append('image', file)
 
@@ -112,7 +122,9 @@ export default function ChatInterface() {
         body: formData,
       })
 
-      if (!response.ok) throw new Error('Upload failed')
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
 
       const { fileUrl } = await response.json()
       
@@ -127,6 +139,8 @@ export default function ChatInterface() {
       console.error('Error uploading file:', error)
       alert('Failed to upload image')
     }
+    
+    e.target.value = ''
   }
 
   const setTypingStatus = useCallback((isTyping: boolean) => {
